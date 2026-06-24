@@ -1,0 +1,134 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: #fafaf8;
+    color: #181816;
+    overflow-x: hidden;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .section-eyebrow {
+    @apply text-[11px] tracking-widest uppercase text-accent mb-4 font-medium;
+  }
+
+  .section-title {
+    @apply font-serif text-[clamp(36px,5vw,64px)] font-normal leading-[1.08] tracking-tight text-ink mb-5;
+  }
+
+  .section-title em {
+    @apply italic text-accent not-italic;
+  }
+
+  .section-sub {
+    @apply text-[16px] text-ink3 leading-relaxed max-w-[540px];
+  }
+
+  .btn {
+    @apply inline-flex items-center gap-2 text-sm font-medium tracking-wide rounded-full transition-all cursor-pointer;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes flt1 {
+  0%,
+  100% {
+    transform: rotate(-4deg) translateY(0);
+  }
+  50% {
+    transform: rotate(-4deg) translateY(-14px);
+  }
+}
+
+@keyframes flt2 {
+  0%,
+  100% {
+    transform: rotate(3.5deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3.5deg) translateY(-10px);
+  }
+}
+
+@keyframes waPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ldFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ldProg {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
