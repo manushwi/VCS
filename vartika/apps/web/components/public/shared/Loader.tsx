@@ -18,11 +18,12 @@ export default function Loader() {
       }`}
     >
       <div className="flex flex-col items-center gap-1.5 opacity-0 animate-[ldFade_0.6s_ease_0.2s_forwards]">
-        <img
-          src="/logo.svg"
-          alt="Vartika"
-          className="w-auto h-16 object-contain"
-        />
+         <img
+      src="/logo.svg"
+      alt="Vartika"
+      className="w-auto h-[250px] mb-0 object-contain"
+    />
+
       </div>
       <div className="w-40 h-px bg-bd2 overflow-hidden rounded-px">
         <div className="h-full w-0 bg-accent animate-[ldProg_1.4s_cubic-bezier(0.4,0,0.2,1)_0.4s_forwards]" />

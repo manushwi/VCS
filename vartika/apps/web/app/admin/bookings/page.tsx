@@ -1,19 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getBookings, updateBooking } from "@/lib/supabase/queries/bookings";
+import { getLocalBookings, updateLocalBooking } from "@/lib/local-bookings";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { WA_TEMPLATES } from "@/lib/constants/messages";
 
-const dummyBookings = [
-  { id: "1", initials: "RK", name: "Ravi Kumar", phone: "+91 98110 22334", svc: "Floor Polish", date: "25 Jun 2025", time: "Morning", city: "Noida", status: "new" },
-  { id: "2", initials: "SP", name: "Sneha Patel", phone: "+91 91234 56789", svc: "Sofa Cleaning", date: "24 Jun 2025", time: "Afternoon", city: "Delhi", status: "contacted" },
-  { id: "3", initials: "AS", name: "Ankit Singh", phone: "+91 87654 32100", svc: "Deep Cleaning", date: "22 Jun 2025", time: "Morning", city: "Gurgaon", status: "confirmed" },
-  { id: "4", initials: "PM", name: "Pooja Mehta", phone: "+91 99887 66554", svc: "Office Cleaning", date: "20 Jun 2025", time: "Morning", city: "Noida", status: "completed" },
-  { id: "5", initials: "VK", name: "Vikram Kapoor", phone: "+91 76543 21098", svc: "Move-Out", date: "18 Jun 2025", time: "Evening", city: "Gurgaon", status: "completed" },
-  { id: "6", initials: "SN", name: "Shreya Nair", phone: "+91 88776 65544", svc: "Home Cleaning", date: "27 Jun 2025", time: "Morning", city: "Delhi", status: "new" },
-  { id: "7", initials: "AG", name: "Amit Gupta", phone: "+91 90909 80808", svc: "Kitchen Cleaning", date: "28 Jun 2025", time: "Afternoon", city: "Ghaziabad", status: "new" },
-  { id: "8", initials: "RJ", name: "Ritu Jain", phone: "+91 77788 99900", svc: "Bathroom Cleaning", date: "26 Jun 2025", time: "Evening", city: "Faridabad", status: "contacted" },
-];
+const TABS = [
+  { key: "all", label: "All" },
+  { key: "new", label: "New" },
+  { key: "cancelled", label: "Rejected" },
+  { key: "confirmed", label: "Confirmed" },
+  { key: "contacted", label: "Contacted" },
+] as const;
 
-const statusColors: Record<string, string> = {
+const STATUS_STYLES: Record<string, string> = {
   new: "bg-[rgba(200,217,200,0.08)] border-[rgba(200,217,200,0.2)] text-accent2",
   contacted: "bg-[rgba(96,165,250,0.08)] border-[rgba(96,165,250,0.2)] text-[#60A5FA]",
   confirmed: "bg-[rgba(34,197,94,0.08)] border-[rgba(34,197,94,0.2)] text-[#22C55E]",
@@ -21,108 +23,353 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-[rgba(239,68,68,0.08)] border-[rgba(239,68,68,0.2)] text-[#EF4444]",
 };
 
-const filters = ["All", "New", "Contacted", "Confirmed", "Completed", "Cancelled"];
+const STATUS_LABEL: Record<string, string> = {
+  new: "New",
+  contacted: "Contacted",
+  confirmed: "Confirmed",
+  completed: "Completed",
+  cancelled: "Rejected",
+};
+
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function getServiceName(slug: string, svcList: { slug: string; name: string }[]) {
+  return svcList.find((s) => s.slug === slug)?.name || slug;
+}
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTime(slot: string) {
+  const map: Record<string, string> = {
+    morning: "8–12 AM",
+    afternoon: "12–4 PM",
+    evening: "4–8 PM",
+  };
+  return map[slot] || slot;
+}
+
+interface CardBooking {
+  id: string;
+  customer_name: string;
+  phone: string;
+  whatsapp?: string;
+  email?: string;
+  service_slug: string;
+  property_type?: string;
+  area_sqft?: number;
+  preferred_date: string;
+  time_slot: string;
+  state?: string;
+  district?: string;
+  pincode?: string;
+  address?: string;
+  notes?: string;
+  source?: string;
+  status: string;
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+  _local?: boolean;
+}
 
 export default function AdminBookingsPage() {
-  const [activeFilter, setActiveFilter] = useState("All");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("q") || "";
+  const [bookings, setBookings] = useState<CardBooking[]>([]);
+  const [services, setServices] = useState<{ slug: string; name: string }[]>([]);
+  const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  const filtered = activeFilter === "All"
-    ? dummyBookings
-    : dummyBookings.filter((b) => b.status === activeFilter.toLowerCase());
+  useEffect(() => {
+    Promise.all([
+      getBookings(),
+      fetch("/api/services").then((r) => r.json()),
+    ])
+      .then(([{ data, error }, svcRows]) => {
+        setServices(svcRows.map((s: { slug: string; name: string }) => ({ slug: s.slug, name: s.name })));
+        if (data) {
+          setBookings(data);
+        } else {
+          const local = getLocalBookings();
+          setBookings(local.map((b) => ({ ...b, _local: true })));
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        const local = getLocalBookings();
+        setBookings(local.map((b) => ({ ...b, _local: true })));
+        setLoading(false);
+      });
+  }, []);
+
+  const filtered = useMemo(() => {
+    const byTab = activeTab === "all"
+      ? bookings
+      : bookings.filter((b) => b.status === activeTab);
+
+    if (!searchQuery) return byTab;
+
+    const q = searchQuery.toLowerCase();
+    return byTab.filter(
+      (b) =>
+        b.customer_name.toLowerCase().includes(q) ||
+        b.phone.includes(q) ||
+        b.id.toLowerCase().includes(q)
+    );
+  }, [bookings, activeTab, searchQuery]);
+
+  const counts = Object.fromEntries(
+    TABS.map((t) => [
+      t.key,
+      t.key === "all"
+        ? bookings.length
+        : bookings.filter((b) => b.status === t.key).length,
+    ])
+  );
+
+  const handleApprove = async (id: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (booking?._local) {
+      updateLocalBooking(id, { status: "confirmed" });
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))
+      );
+      return;
+    }
+    const { data } = await updateBooking(id, { status: "confirmed" });
+    if (data) {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))
+      );
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const booking = bookings.find((b) => b.id === id);
+    if (booking?._local) {
+      updateLocalBooking(id, { status: "cancelled" });
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
+      );
+      return;
+    }
+    const { data } = await updateBooking(id, { status: "cancelled" });
+    if (data) {
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-6 w-24 bg-white/5 rounded-8 mb-5" />
+        <div className="flex gap-2 mb-6 flex-wrap">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-8 w-20 bg-white/5 rounded-full" />
+          ))}
+        </div>
+        <div className="grid gap-3.5">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-[#161714] border border-white/6 rounded-12 p-5 flex items-center gap-5 max-md:flex-col max-md:items-start">
+              <div className="w-10 h-10 rounded-full bg-white/5 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-32 bg-white/5 rounded-8" />
+                <div className="h-3 w-24 bg-white/5 rounded-8" />
+              </div>
+              <div className="h-6 w-20 bg-white/5 rounded-full" />
+              <div className="h-6 w-16 bg-white/5 rounded-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <h2 className="text-lg font-semibold text-white/85 mb-5">Bookings</h2>
-      <div className="flex gap-2 mb-5 flex-wrap">
-        {filters.map((f) => (
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {TABS.map((tab) => (
           <button
-            key={f}
-            className={`px-4 py-1.5 rounded-full text-xs cursor-pointer transition-all ${
-              activeFilter === f
+            key={tab.key}
+            className={`relative px-4 py-1.5 rounded-full text-xs cursor-pointer transition-all ${
+              activeTab === tab.key
                 ? "bg-accent text-white"
                 : "bg-white/5 text-white/40 border border-white/6 hover:text-white/70"
             }`}
-            onClick={() => setActiveFilter(f)}
+            onClick={() => setActiveTab(tab.key)}
           >
-            {f}
+            {tab.label}
+            <span
+              className={`ml-1.5 text-[10px] ${
+                activeTab === tab.key ? "text-white/60" : "text-white/20"
+              }`}
+            >
+              ({counts[tab.key]})
+            </span>
           </button>
         ))}
       </div>
-      <div className="bg-[#161714] border border-white/6 rounded-12 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-black/20 border-b border-white/4">
-                {["Customer", "Service", "Date", "Time", "City", "Status", "Actions"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="text-[10px] tracking-widest uppercase text-white/25 px-5 py-2.5 text-left whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-white/3 hover:bg-white/[0.02] transition-colors"
-                >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                        {row.initials}
-                      </div>
-                      <div>
-                        <span className="text-sm text-white/75 block">
-                          {row.name}
-                        </span>
-                        <span className="text-[11px] text-white/30 block">
-                          {row.phone}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span className="bg-white/5 border border-white/6 rounded px-2 py-0.5 text-[11px] text-white/50">
-                      {row.svc}
-                    </span>
-                  </td>
-                  <td className="font-mono text-[11px] text-white/40 px-5">
-                    {row.date}
-                  </td>
-                  <td className="font-mono text-[11px] text-white/40 px-5">
-                    {row.time}
-                  </td>
-                  <td className="font-mono text-[11px] text-white/40 px-5">
-                    {row.city}
-                  </td>
-                  <td className="px-5">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] border ${statusColors[row.status]}`}
-                    >
-                      {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-5">
-                    <div className="flex gap-1">
-                      <span className="w-[26px] h-[26px] inline-flex items-center justify-center rounded-[5px] cursor-pointer text-white/25 hover:text-accent2 hover:bg-[rgba(61,89,72,0.12)] transition-all text-xs">
-                        👁
-                      </span>
-                      <span className="w-[26px] h-[26px] inline-flex items-center justify-center rounded-[5px] cursor-pointer text-white/25 hover:text-accent2 hover:bg-[rgba(61,89,72,0.12)] transition-all text-xs">
-                        ✎
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      {/* Cards */}
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 text-white/20 text-sm">
+          No bookings found.
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-3.5">
+          {filtered.map((booking) => (
+            <div
+              key={booking.id}
+              className="bg-[#161714] border border-white/6 rounded-12 p-5 flex items-center gap-5 max-md:flex-col max-md:items-start cursor-pointer hover:border-white/15 transition-colors"
+              onClick={() => router.push(`/admin/bookings/${booking.id}`)}
+            >
+              {/* Avatar */}
+              <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                {getInitials(booking.customer_name)}
+                {booking._local && (
+                  <span
+                    className="absolute -top-1 -right-1 text-[9px]"
+                    title="Using local storage (no Supabase)"
+                  >
+                    🔧
+                  </span>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0 grid grid-cols-[1fr_auto_auto_auto] gap-x-6 gap-y-1 items-center max-md:grid-cols-2 max-md:w-full">
+                {/* Name + Phone */}
+                <div className="min-w-0">
+                  <div className="text-sm text-white/75 truncate flex items-center gap-1.5">
+                    {booking.customer_name}
+                  </div>
+                  <a
+                    href={`tel:${booking.phone}`}
+                    className="text-[11px] text-white/30 truncate hover:text-accent2 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {booking.phone}
+                  </a>
+                </div>
+
+                {/* Service */}
+                <span className="bg-white/5 border border-white/6 rounded px-2 py-0.5 text-[11px] text-white/50 whitespace-nowrap overflow-hidden text-ellipsis max-w-[140px]">
+                  {getServiceName(booking.service_slug, services)}
+                </span>
+
+                {/* Date */}
+                <span className="font-mono text-[11px] text-white/40 whitespace-nowrap min-w-0 overflow-hidden text-ellipsis">
+                  {formatDate(booking.preferred_date)}
+                </span>
+
+                {/* Time */}
+                <span className="font-mono text-[11px] text-white/40 whitespace-nowrap min-w-0 overflow-hidden text-ellipsis">
+                  {formatTime(booking.time_slot)}
+                </span>
+
+                {/* Address (if present) */}
+                {booking.address && (
+                  <span className="text-[10px] text-white/25 col-span-full truncate">
+                    📍 {[booking.address, booking.district, booking.state, booking.pincode].filter(Boolean).join(", ")}
+                  </span>
+                )}
+              </div>
+
+              {/* Status badge */}
+              <span
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] border shrink-0 ${
+                  STATUS_STYLES[booking.status] || ""
+                }`}
+              >
+                {STATUS_LABEL[booking.status] || booking.status}
+              </span>
+
+              {/* Actions */}
+              <div className="flex gap-1.5 shrink-0 flex-wrap">
+                {booking.status === "new" && (
+                  <>
+                    <button
+                      className="px-3 py-1.5 bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.2)] text-[#22C55E] rounded-full text-[11px] font-medium hover:bg-[rgba(34,197,94,0.15)] transition-all cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); handleApprove(booking.id); }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="px-3 py-1.5 bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] text-[#EF4444] rounded-full text-[11px] font-medium hover:bg-[rgba(239,68,68,0.12)] transition-all cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); handleReject(booking.id); }}
+                    >
+                      Reject
+                    </button>
+                    <button
+                      className="px-3 py-1.5 bg-[rgba(37,211,102,0.1)] border border-[rgba(37,211,102,0.2)] text-[#25D366] rounded-full text-[11px] font-medium hover:bg-[rgba(37,211,102,0.15)] transition-all cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setBookings((prev) =>
+                          prev.map((b) => (b.id === booking.id ? { ...b, status: "contacted" } : b))
+                        );
+                        if (!booking._local) {
+                          updateBooking(booking.id, { status: "contacted" });
+                        } else {
+                          updateLocalBooking(booking.id, { status: "contacted" });
+                        }
+                        const svc = getServiceName(booking.service_slug, services);
+                        const msg = WA_TEMPLATES.appointment_confirmed(
+                          booking.customer_name,
+                          svc,
+                          formatDate(booking.preferred_date),
+                          formatTime(booking.time_slot)
+                        );
+                        const customerPhone = booking.whatsapp || booking.phone;
+                        window.open(buildWhatsAppUrl(msg, customerPhone), "_blank");
+                      }}
+                    >
+                      WhatsApp
+                    </button>
+                  </>
+                )}
+                {booking.status === "contacted" && (
+                  <>
+                    <button
+                      className="px-3 py-1.5 bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.2)] text-[#22C55E] rounded-full text-[11px] font-medium hover:bg-[rgba(34,197,94,0.15)] transition-all cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); handleApprove(booking.id); }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="px-3 py-1.5 bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] text-[#EF4444] rounded-full text-[11px] font-medium hover:bg-[rgba(239,68,68,0.12)] transition-all cursor-pointer"
+                      onClick={(e) => { e.stopPropagation(); handleReject(booking.id); }}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+                {booking.status !== "new" && booking.status !== "confirmed" && booking.status !== "contacted" && (
+                  <span className="text-[11px] text-white/20 px-2 py-1.5">—</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

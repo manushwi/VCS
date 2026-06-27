@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+import Image from "next/image";
 import Link from "next/link";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata({ pageSlug: "about" });
+}
 
 export default function AboutPage() {
   return (
@@ -6,10 +13,13 @@ export default function AboutPage() {
       {/* Hero */}
       <section className="h-[80vh] relative flex items-end px-12 pb-20 max-md:px-5">
         <div className="absolute inset-0">
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=80"
             alt="About Vartika"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/10 to-transparent" />
         </div>
@@ -27,11 +37,14 @@ export default function AboutPage() {
       {/* Story */}
       <section className="max-w-[1100px] mx-auto px-12 py-[100px] max-md:px-5 max-md:py-16">
         <div className="grid grid-cols-[1fr_1fr] gap-20 items-center mb-20 max-md:grid-cols-1 max-md:gap-10">
-          <div className="rounded-24 overflow-hidden aspect-[4/5] shadow-xl">
-            <img
-              src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=600&q=80"
+          <div className="rounded-24 overflow-hidden aspect-[4/5] shadow-xl relative">
+            <Image
+              src="https://res.cloudinary.com/abh95i2u/image/upload/v1782415274/wi7owc8zeki9j3zfws7m.jpg"
               alt="Founder"
+              fill
+              className="object-cover"
               loading="lazy"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
           <div>
@@ -41,7 +54,7 @@ export default function AboutPage() {
               not just a <em className="italic text-accent">service.</em>
             </h2>
             <p className="section-sub max-w-none">
-              Vartika was founded in 2019 with a simple conviction: the cleaning
+              Vartika Cleaning Solutions was founded in 2019 with a simple conviction: the cleaning
               industry deserved to be elevated. Not just cleaner spaces, but a
               premium experience — from first contact to final result.
             </p>
@@ -54,11 +67,14 @@ export default function AboutPage() {
         </div>
 
         <div className="grid grid-cols-[1fr_1fr] gap-20 items-center max-md:grid-cols-1 max-md:gap-10" dir="rtl">
-          <div className="rounded-24 overflow-hidden aspect-[4/5] shadow-xl" dir="ltr">
-            <img
+          <div className="rounded-24 overflow-hidden aspect-[4/5] shadow-xl relative" dir="ltr">
+            <Image
               src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80"
               alt="Our Work"
+              fill
+              className="object-cover"
               loading="lazy"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
           <div dir="ltr">
@@ -110,42 +126,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
-      <section className="max-w-[1100px] mx-auto px-12 py-[100px] max-md:px-5 max-md:py-16">
-        <div className="section-eyebrow">The Team</div>
-        <h2 className="section-title">
-          The people behind<br />
-          every <em>spotless space.</em>
-        </h2>
-        <div className="grid grid-cols-4 gap-5 mt-12 max-md:grid-cols-2">
-          {[
-            { name: "Priya Vartika", role: "Founder & CEO", img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&h=520&q=80" },
-            { name: "Arjun Verma", role: "Operations Director", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&h=520&q=80" },
-            { name: "Meera Kapoor", role: "Head of Quality", img: "https://images.unsplash.com/photo-1573616782895-e10ef82ff1ef?auto=format&fit=crop&w=400&h=520&q=80" },
-            { name: "Rahul Singh", role: "Lead Technician", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=520&q=80" },
-          ].map((m) => (
-            <div key={m.name} className="cursor-pointer">
-              <div className="rounded-16 overflow-hidden aspect-[3/4] mb-4 bg-bg2">
-                <img
-                  src={m.img}
-                  alt={m.name}
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="font-serif text-xl text-ink mb-1 font-normal">
-                {m.name}
-              </div>
-              <div className="text-sm text-ink3">{m.role}</div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* CTA */}
-      <section className="text-center px-12 py-15 bg-bg2 max-md:px-5">
+      {/* <section className="text-center px-12 py-20 bg-bg2  max-md:px-5">
         <div className="section-eyebrow">Ready to experience Vartika?</div>
-        <h2 className="section-title" style={{ margin: "12px 0" }}>
+        <h2 className="section-title" style={{ margin: "12px" }}>
           Book your first <em>cleaning.</em>
         </h2>
         <Link
@@ -154,7 +139,7 @@ export default function AboutPage() {
         >
           Book Now
         </Link>
-      </section>
+      </section> */}
     </div>
   );
 }

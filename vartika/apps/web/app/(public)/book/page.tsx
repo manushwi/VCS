@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 import BookingForm from "@/components/public/booking/BookingForm";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata({ pageSlug: "book" });
+}
 
 export default async function BookPage({
   searchParams,

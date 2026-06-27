@@ -2,7 +2,7 @@ import { createClient } from "../client";
 
 export async function insertBooking(data: Record<string, unknown>) {
   const supabase = createClient();
-  return supabase.from("bookings").insert(data).select().single();
+  return supabase.from("bookings").insert(data);
 }
 
 export async function getBookings() {

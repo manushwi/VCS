@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
 import Link from "next/link";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata({ pageSlug: "contact" });
+}
 
 export default function ContactPage() {
   return (

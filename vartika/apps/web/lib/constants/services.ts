@@ -16,7 +16,7 @@ export interface Service {
 
 export const SERVICES: Service[] = [
   {
-    slug: "marble-diamond-polishing",
+    slug: "marbel-diamond-polishing",
     name: "Marble Diamond Polishing",
     icon: "💎",
     basePrice: 180,
@@ -113,8 +113,8 @@ export const SERVICES: Service[] = [
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&h=800&q=80",
   },
   {
-    slug: "sofa-cleaning",
-    name: "Sofa Cleaning",
+    slug: "sofa-deep-cleaning",
+    name: "Sofa Deep Cleaning",
     icon: "🛋",
     basePrice: 499,
     pricingUnit: "seat",

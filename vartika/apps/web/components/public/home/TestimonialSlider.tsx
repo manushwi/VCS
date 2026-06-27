@@ -16,13 +16,15 @@ const testimonials = {
     },
     {
       text: "Our office required post-renovation cleaning on short notice. Vartika delivered a spotless space in 8 hours. Truly impressive work ethic.",
-      name: "Anita Sharma",
+      name: "Ankit Sharma",
       city: "Connaught Place, Delhi",
       avatar:
-        "https://images.unsplash.com/photo-1573616782895-e10ef82ff1ef?auto=format&fit=crop&w=80&h=80&q=80",
+        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=520&q=80",
     },
   ],
 };
+
+import Image from "next/image";
 
 export default function TestimonialSlider() {
   return (
@@ -42,15 +44,19 @@ export default function TestimonialSlider() {
 
       <div className="grid grid-cols-[1fr_1fr] gap-5 max-md:grid-cols-1">
         {/* Big testimonial */}
-        <div className="bg-accent rounded-24 p-13 relative overflow-hidden max-md:p-8">
-          <div className="absolute inset-0 opacity-12">
-            <img
+        <div className="bg-accent-500 rounded-24 p-13 relative overflow-hidden max-md:p-8 p-8">
+          <div className="absolute inset-0">
+            <Image
               src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=600&q=60"
               alt=""
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              loading="lazy"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
+            <div className="absolute inset-0 bg-accent/70" />
           </div>
-          <div className="relative z-[1]">
+          <div className="relative z-[1] ">
             <div className="text-white/85 text-sm tracking-wider mb-1">
               ★★★★★
             </div>
@@ -61,10 +67,14 @@ export default function TestimonialSlider() {
               {testimonials.big.text}
             </p>
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shrink-0">
-                <img
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shrink-0 relative">
+                <Image
                   src={testimonials.big.avatar}
                   alt={testimonials.big.name}
+                  fill
+                  className="object-cover"
+                  loading="lazy"
+                  sizes="48px"
                 />
               </div>
               <div>
@@ -96,8 +106,8 @@ export default function TestimonialSlider() {
                 {t.text}
               </p>
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-bd shrink-0">
-                  <img src={t.avatar} alt={t.name} />
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-bd shrink-0 relative">
+                  <Image src={t.avatar} alt={t.name} fill className="object-cover" loading="lazy" sizes="48px" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-ink">{t.name}</div>

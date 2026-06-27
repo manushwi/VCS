@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SERVICES } from "@/lib/constants/services";
 
 export default function Footer() {
   const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919876543210";
@@ -10,16 +11,14 @@ export default function Footer() {
       <div className="max-w-[1100px] mx-auto grid grid-cols-[1.6fr_1fr_1fr_1fr] gap-15 mb-15 max-md:grid-cols-2 max-md:gap-10">
         {/* Brand */}
         <div>
-          <img
-            src="/logo.svg"
-            alt="Vartika"
-            className="h-12 w-auto object-contain mb-5"
-          />
-          <p className="text-sm text-white/40 leading-relaxed max-w-[260px] mb-7">
+          <div className="flex items-center pt-5 pb-0 mb-0 gap-3">
+            <img src="/logo-horizontal.svg" alt="Vartika" className="h-[100px] w-auto object-contain" />
+          </div>
+          <p className="text-sm text-white/40 leading-relaxed mt-0 max-w-[260px] mb-2">
             Transforming spaces with precision, care, and the highest standards
             of cleanliness.
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-2">
             {/* Instagram */}
             <div className="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center cursor-pointer text-white/40 hover:border-accent2 hover:text-accent3 transition-all">
               <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
@@ -50,20 +49,13 @@ export default function Footer() {
             Services
           </div>
           <ul className="list-none flex flex-col gap-2.5">
-            {[
-              "Home Cleaning",
-              "Deep Cleaning",
-              "Sofa Cleaning",
-              "Kitchen Cleaning",
-              "Office Cleaning",
-              "Move-In/Out",
-            ].map((s) => (
-              <li key={s}>
+            {SERVICES.map((s) => (
+              <li key={s.slug}>
                 <Link
-                  href="/#services"
+                  href={`/services/${s.slug}`}
                   className="text-sm text-white/40 hover:text-white/85 transition-colors"
                 >
-                  {s}
+                  {s.name}
                 </Link>
               </li>
             ))}
@@ -79,7 +71,7 @@ export default function Footer() {
             {[
               { label: "About Us", href: "/about" },
               { label: "Gallery", href: "/gallery" },
-              { label: "Service Areas", href: "/#areas" },
+              { label: "Service Areas", href: "/services" },
               { label: "Privacy Policy", href: "#" },
               { label: "Terms of Service", href: "#" },
             ].map((l) => (
@@ -102,15 +94,15 @@ export default function Footer() {
           </div>
           <div className="flex gap-2 mb-2 text-sm">
             <span className="text-accent2">📞</span>
-            <span className="text-white/50">+91 98765 43210</span>
+            <span className="text-white/50">+91 8882121010</span>
           </div>
-          <div className="flex gap-2 mb-2 text-sm">
+          <div className="flex gap-2 mb-2 text-sm min-w-0">
             <span className="text-accent2">✉</span>
-            <span className="text-white/35">hello@vartika.in</span>
+            <span className="text-white/35 break-all">vartikacleaningsol@gmail.com</span>
           </div>
           <div className="flex gap-2 mb-4 text-sm">
             <span className="text-accent2">📍</span>
-            <span className="text-white/35">Delhi NCR, India</span>
+            <span className="text-white/35">A17, Main Market, Ghaziabad, Ghaziabad-201001, Uttar Pradesh, India</span>
           </div>
           <button
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[rgba(37,211,102,0.1)] border border-[rgba(37,211,102,0.2)] text-sm text-[#25D366] hover:bg-[rgba(37,211,102,0.15)] transition-all"
@@ -131,10 +123,10 @@ export default function Footer() {
 
       <div className="max-w-[1100px] mx-auto border-t border-white/7 pt-7 flex justify-between items-center flex-wrap gap-3">
         <span className="text-xs text-white/20">
-          © 2025 Vartika Cleaning Solutions. All rights reserved.
+          © 2026 Vartika Cleaning Solutions. All rights reserved.
         </span>
         <Link
-          href="/admin"
+          href="/admin/dashboard"
           className="text-[11px] tracking-widest uppercase text-white/30 border border-white/10 px-3.5 py-1.5 rounded-full hover:border-accent3/30 hover:text-accent3/70 transition-all"
         >
           Admin Panel →

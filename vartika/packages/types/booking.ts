@@ -9,7 +9,10 @@ export interface Booking {
   area_sqft?: number;
   preferred_date: string;
   time_slot: "morning" | "afternoon" | "evening";
-  city: string;
+  state?: string;
+  district?: string;
+  pincode?: string;
+  address?: string;
   notes?: string;
   source?: "google" | "whatsapp" | "friend" | "social" | "other";
   status: "new" | "contacted" | "confirmed" | "completed" | "cancelled";

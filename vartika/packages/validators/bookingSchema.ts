@@ -10,7 +10,10 @@ export const bookingSchema = z.object({
   area_sqft: z.number().optional(),
   preferred_date: z.string().min(1, "Select a date"),
   time_slot: z.enum(["morning", "afternoon", "evening"]),
-  city: z.string().min(1, "Select a city"),
+  state: z.string().optional(),
+  district: z.string().optional(),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be 6 digits").optional().or(z.literal("")),
+  address: z.string().optional(),
   notes: z.string().optional(),
   source: z.enum(["google", "whatsapp", "friend", "social", "other"]).optional(),
 });

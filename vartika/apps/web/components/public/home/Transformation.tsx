@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Transformation() {
@@ -84,18 +85,23 @@ export default function Transformation() {
         className="relative h-[520px] overflow-hidden cursor-ew-resize select-none"
       >
         <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1600&q=80"
+          <Image
+            src="/shining2.png"
             alt="Before cleaning"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
-          <div className="absolute inset-0 bg-black/45" />
         </div>
         <div ref={afterRef} className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80"
+          <Image
+            src="/dull2.png"
             alt="After cleaning"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            loading="lazy"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
           <div className="absolute inset-0 bg-accent/15" />
         </div>

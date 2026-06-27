@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 export default function CTABanner() {
@@ -8,10 +9,13 @@ export default function CTABanner() {
   return (
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=80"
           alt="Luxury space"
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          loading="lazy"
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-[rgba(10,12,10,0.7)]" />
       </div>

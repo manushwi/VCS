@@ -1,41 +1,59 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-const items = [
-  {
-    src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80",
-    caption: "Kitchen Restoration · Gurgaon",
-    tall: true,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&h=400&q=80",
-    caption: "Deep Clean · Noida",
-    tall: false,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=600&h=700&q=80",
-    caption: "Bathroom · Delhi",
-    tall: true,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=600&q=80",
-    caption: "Kitchen · Faridabad",
-    tall: false,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=600&h=400&q=80",
-    caption: "Living Room · Delhi",
-    tall: false,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80",
-    caption: "Full Apartment · Greater Noida",
-    tall: true,
-  },
-];
+interface CloudinaryImage {
+  publicId: string;
+  url: string;
+  caption: string;
+  width: number;
+  height: number;
+}
+
+const ITEM_COUNT = 6;
 
 export default function GalleryPreview() {
+  const [items, setItems] = useState<
+    { src: string; caption: string; tall: boolean }[]
+  >([]);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const res = await fetch("/api/gallery/featured");
+        if (res.ok) {
+          const rows = await res.json();
+          if (rows.length > 0) {
+            setItems(
+              rows.slice(0, ITEM_COUNT).map((img: { image_url: string; caption: string }) => ({
+                src: img.image_url,
+                caption: img.caption || "Gallery",
+                tall: false,
+              }))
+            );
+            return;
+          }
+        }
+      } catch {}
+
+      try {
+        const res = await fetch("/api/gallery");
+        if (res.ok) {
+          const images: CloudinaryImage[] = await res.json();
+          setItems(
+            images.slice(0, ITEM_COUNT).map((img) => ({
+              src: img.url,
+              caption: img.caption || "Gallery",
+              tall: img.width > 0 && img.height > 0 ? img.height > img.width : false,
+            }))
+          );
+        }
+      } catch {}
+    };
+    fetchFeatured();
+  }, []);
+
   return (
     <section className="bg-bg2 px-12 py-[100px] max-md:px-5 max-md:py-16">
       <div className="text-center mb-14">
@@ -54,25 +72,29 @@ export default function GalleryPreview() {
         className="columns-3 gap-4 max-md:columns-2"
         style={{ columnCount: 3, columnGap: "16px" }}
       >
-        {items.map((item, i) => (
-          <div
-            key={i}
-            data-lightbox
-            className="break-inside-avoid mb-4 rounded-12 overflow-hidden relative cursor-pointer group"
-          >
-            <img
-              src={item.src}
-              alt={item.caption}
-              className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-              loading="lazy"
-            />
-            <div className="absolute bottom-0 left-0 right-0 px-4 pb-3.5 pt-5 bg-gradient-to-t from-ink/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-              <span className="text-white text-xs tracking-wider uppercase">
-                {item.caption}
-              </span>
-            </div>
-          </div>
-        ))}
+        {items.length === 0
+          ? Array.from({ length: ITEM_COUNT }).map((_, i) => (
+              <div
+                key={i}
+                className="break-inside-avoid mb-4 rounded-12 overflow-hidden bg-[#161714] animate-pulse"
+                style={{ height: i % 3 === 0 ? "320px" : "220px" }}
+              />
+            ))
+          : items.map((item, i) => (
+              <div
+                key={i}
+                data-lightbox
+                className="break-inside-avoid mb-4 rounded-12 overflow-hidden relative cursor-pointer group"
+              >
+                <img
+                  src={item.src}
+                  alt={item.caption}
+                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+                
+              </div>
+            ))}
       </div>
 
       <div className="text-center mt-12">

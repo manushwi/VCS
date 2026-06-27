@@ -11,7 +11,7 @@ const serif = Cormorant_Garamond({
 
 const sans = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-sans",
   display: "swap",
 });
@@ -39,6 +39,10 @@ export default function RootLayout({
       lang="en"
       className={`${serif.variable} ${sans.variable} ${mono.variable}`}
     >
+      <link rel="preconnect" href="https://images.unsplash.com" />
+      <link rel="preconnect" href="https://res.cloudinary.com" />
+      <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       <body>{children}</body>
     </html>
   );

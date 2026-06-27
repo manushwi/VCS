@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { SERVICES } from "@/lib/constants/services";
+import { useState, useEffect } from "react";
 import ServiceCard from "@/components/public/shared/ServiceCard";
 import ServiceDetailModal from "@/components/public/shared/ServiceDetailModal";
-import type { Service } from "@/lib/constants/services";
+import { mapServices } from "@/lib/map-service";
+import type { Service } from "@/lib/map-service";
 
 export default function ServicesGrid() {
+  const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  useEffect(() => {
+    fetch("/api/services")
+      .then((res) => res.json())
+      .then((rows) => setServices(mapServices(rows)))
+      .catch(() => {});
+  }, []);
 
   return (
     <section
@@ -28,13 +36,20 @@ export default function ServicesGrid() {
         </p>
       </div>
       <div className="grid grid-cols-5 gap-5 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
-        {SERVICES.map((svc) => (
-          <ServiceCard
-            key={svc.slug}
-            service={svc}
-            onSelect={setSelectedService}
-          />
-        ))}
+        {services.length > 0
+          ? services.map((svc) => (
+              <ServiceCard
+                key={svc.slug}
+                service={svc}
+                onSelect={setSelectedService}
+              />
+            ))
+          : [1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse aspect-[3/4] rounded-16 bg-bg3"
+              />
+            ))}
       </div>
 
       <ServiceDetailModal

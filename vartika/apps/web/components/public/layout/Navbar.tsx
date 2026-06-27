@@ -20,10 +20,9 @@ export default function Navbar() {
   }, [mobOpen]);
 
   const navLinks = [
-    { label: "Services", href: "/#services" },
+    { label: "Services", href: "/services" },
     { label: "Gallery", href: "/gallery" },
     { label: "About", href: "/about" },
-    { label: "Areas", href: "/#areas" },
   ];
 
   return (
@@ -36,11 +35,11 @@ export default function Navbar() {
             : ""
         }`}
       >
-        <Link href="/" className="flex flex-col leading-none cursor-pointer">
+        <Link href="/" className="pt-4 cursor-pointer">
           <img
-            src="/logo.svg"
+            src="/logo-horizontal.svg"
             alt="Vartika"
-            className="h-10 w-auto object-contain"
+            className="h-[68px] max-w-[clamp(140px,35vw,200px)] w-auto object-contain mb-0"
           />
         </Link>
 
@@ -81,13 +80,19 @@ export default function Navbar() {
         </div>
 
         <button
-          className="hidden max-md:flex flex-col gap-1 cursor-pointer p-1"
-          onClick={() => setMobOpen(true)}
-          aria-label="Open menu"
+          className="hidden max-md:flex flex-col items-center justify-center cursor-pointer p-1 w-8 h-8"
+          onClick={() => setMobOpen((prev) => !prev)}
+          aria-label={mobOpen ? "Close menu" : "Open menu"}
         >
-          <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
-          <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
-          <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
+          {mobOpen ? (
+            <span className="text-xl text-ink leading-none">✕</span>
+          ) : (
+            <>
+              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
+              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
+              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
+            </>
+          )}
         </button>
       </nav>
 
@@ -98,13 +103,7 @@ export default function Navbar() {
           mobOpen ? "flex" : "hidden"
         }`}
       >
-        <button
-          className="absolute top-6 right-6 text-2xl text-ink3 cursor-pointer"
-          onClick={() => setMobOpen(false)}
-        >
-          ✕
-        </button>
-        {[...navLinks, { label: "Book Now", href: "/book" }].map((link) => (
+        {[{ label: "Home", href: "/" }, ...navLinks, { label: "Book Now", href: "/book" }].map((link) => (
           <Link
             key={link.label}
             href={link.href}

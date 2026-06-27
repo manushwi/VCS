@@ -9,7 +9,10 @@ CREATE TABLE bookings (
   area_sqft      INTEGER,
   preferred_date DATE          NOT NULL,
   time_slot      VARCHAR(20)   CHECK (time_slot IN ('morning','afternoon','evening')),
-  city           VARCHAR(100)  NOT NULL,
+  state          VARCHAR(100),
+  district       VARCHAR(100),
+  pincode        VARCHAR(6),
+  address        TEXT,
   notes          TEXT,
   source         VARCHAR(20)   DEFAULT 'other'
                                CHECK (source IN ('google','whatsapp','friend','social','other')),
