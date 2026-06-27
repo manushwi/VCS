@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { listGalleryImages, deleteCloudinaryImage } from "@/lib/cloudinary/admin";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function GET() {
   const images = await listGalleryImages();
@@ -17,6 +19,7 @@ export async function GET() {
 }
 
 export async function DELETE(request: NextRequest) {
+  const supabase = getSupabase();
   const publicId = request.nextUrl.searchParams.get("publicId");
   if (!publicId) {
     return NextResponse.json({ error: "publicId required" }, { status: 400 });

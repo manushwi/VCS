@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
-
 const FEATURED_LIMIT = 6;
 
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 export async function GET() {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("gallery")
     .select("*")
@@ -25,6 +28,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const supabase = getSupabase();
   const { cloudinary_id, image_url, caption } = await req.json();
   if (!cloudinary_id || !image_url) {
     return NextResponse.json({ error: "cloudinary_id and image_url required" }, { status: 400 });
@@ -56,6 +60,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const supabase = getSupabase();
   const { cloudinary_id } = await req.json();
   if (!cloudinary_id) {
     return NextResponse.json({ error: "cloudinary_id required" }, { status: 400 });
