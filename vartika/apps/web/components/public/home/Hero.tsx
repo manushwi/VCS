@@ -47,8 +47,9 @@ export default function Hero() {
           <span className="w-1.5 h-1.5 rounded-full bg-[#1b4332]" />
           Premium Architectural Care
         </div>
-            <h1 className="text-5xl lg:text-7xl text-[#0A0908]/70 font-bold leading-tight">
-              Bringing Back the Shine <br />
+            <h1 className="text-3xl md:text-5xl lg:text-7xl text-[#0A0908]/70 font-bold leading-tight">
+              Bringing Back the Shine{" "}
+              <br className="hidden md:block" />
               to Your Spaces
             </h1>
             <p className="mt-6 text-lg md:text-xl text-[#0A0908]/70">
