@@ -29,15 +29,15 @@ export default function Navbar() {
     <>
       <nav
         id="nav"
-        className={`fixed top-0 left-0 right-0 h-[68px] z-[1000] flex items-center justify-between px-12 max-md:px-5 transition-all duration-300 ${
+        className={`fixed top-4 left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-7xl h-[68px] z-[1000] bg-bg/80 backdrop-blur-xl rounded-2xl border border-white/10 shadow-md flex items-center justify-between px-6 max-md:px-4 transition-all duration-300 ${
           scrolled
-            ? "bg-bg/90 backdrop-blur-xl shadow-[0_1px_0_rgba(24,24,22,0.08)]"
+            ? "shadow-lg border-white/20"
             : ""
         }`}
       >
-        <Link href="/" className="pt-4 cursor-pointer">
+        <Link href="/" className="pt-1 cursor-pointer">
           <img
-            src="/logo-horizontal.svg"
+            src="/newlogogreen.svg"
             alt="Vartika"
             className="h-[68px] max-w-[clamp(140px,35vw,200px)] w-auto object-contain mb-0"
           />

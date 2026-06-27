@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
   open: boolean;
@@ -31,10 +32,10 @@ export default function Modal({ open, onClose, children }: ModalProps) {
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 pt-20 pb-8"
+      className="fixed inset-0 z-[1100] flex items-start justify-center bg-black/60 backdrop-blur-sm px-4 pt-20 pb-8"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
@@ -66,6 +67,7 @@ export default function Modal({ open, onClose, children }: ModalProps) {
         </button>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

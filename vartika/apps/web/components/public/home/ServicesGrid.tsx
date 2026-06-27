@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import ServiceCard from "@/components/public/shared/ServiceCard";
-import ServiceDetailModal from "@/components/public/shared/ServiceDetailModal";
 import { mapServices } from "@/lib/map-service";
 import type { Service } from "@/lib/map-service";
 
 export default function ServicesGrid() {
   const [services, setServices] = useState<Service[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   useEffect(() => {
     fetch("/api/services")
@@ -19,44 +17,87 @@ export default function ServicesGrid() {
 
   return (
     <section
+      className="relative py-24 px-4 md:px-8"
       id="services"
-      className="px-12 py-[120px] bg-bg max-md:px-5 max-md:py-20"
+      style={{
+        backgroundImage: "url(/marble.png)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
     >
-      <div className="flex items-end justify-between mb-16 flex-wrap gap-6">
-        <div>
-          <div className="section-eyebrow">Our Services</div>
-          <h2 className="section-title">
-            Every service.<br />
-            <em>Extraordinary.</em>
+      {/* Overlay for contrast */}
+      <div className="absolute inset-0" />
+
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <h2 className="font-serif text-4xl md:text-5xl font-bold text-white mb-4">
+            Our Premium Services
           </h2>
+          <p className="text-white/50 max-w-2xl mx-auto">
+            Discover our range of professional cleaning and restoration services
+            designed to bring elegance back to your spaces.
+          </p>
         </div>
-        <p className="section-sub max-md:max-w-full">
-          Five specialised cleaning services, each delivered by trained
-          professionals using premium, eco-certified products.
-        </p>
-      </div>
-      <div className="grid grid-cols-5 gap-5 max-lg:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1">
-        {services.length > 0
-          ? services.map((svc) => (
+
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {services.slice(0, 3).map((service, index) => (
+            <div
+              key={service.slug}
+              className="animate-slide-up"
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
               <ServiceCard
-                key={svc.slug}
-                service={svc}
-                onSelect={setSelectedService}
+                service={service}
+                onSelect={() => {}}
               />
-            ))
-          : [1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="animate-pulse aspect-[3/4] rounded-16 bg-bg3"
+            </div>
+          ))}
+        </div>
+
+        {/* Second row - Large card + regular card */}
+        {services.length > 3 && (
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-6">
+            <div
+              className="lg:col-span-3 animate-slide-up"
+              style={{ animationDelay: "450ms" }}
+            >
+              <ServiceCard
+                service={services[3]}
+                onSelect={() => {}}
               />
-            ))}
+            </div>
+            <div
+              className="lg:col-span-2 animate-slide-up"
+              style={{ animationDelay: "600ms" }}
+            >
+              <ServiceCard
+                service={services[4]}
+                onSelect={() => {}}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <ServiceDetailModal
-        service={selectedService}
-        open={!!selectedService}
-        onClose={() => setSelectedService(null)}
-      />
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.6s ease-out forwards;
+          opacity: 0;
+        }
+      `}</style>
     </section>
   );
 }
