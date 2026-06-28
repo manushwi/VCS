@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getBooking, updateBooking } from "@/lib/supabase/queries/bookings";
 import { getLocalBookings, updateLocalBooking } from "@/lib/local-bookings";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { WA_TEMPLATES } from "@/lib/constants/messages";
@@ -77,13 +76,13 @@ export default function BookingDetailPage() {
   useEffect(() => {
     if (params.id) {
       Promise.all([
-        getBooking(params.id as string),
+        fetch(`/api/bookings?id=${params.id}`).then((r) => r.json()),
         fetch("/api/services").then((r) => r.json()),
       ])
-        .then(([{ data, error }, svcRows]) => {
+        .then(([bookingRes, svcRows]) => {
           setServices(svcRows.map((s: { slug: string; name: string }) => ({ slug: s.slug, name: s.name })));
-          if (data) {
-            setBooking(data);
+          if (bookingRes.data) {
+            setBooking(bookingRes.data);
           } else {
             const local = getLocalBookings();
             const found = local.find((b) => b.id === params.id);
@@ -100,20 +99,29 @@ export default function BookingDetailPage() {
     }
   }, [params.id]);
 
-  const handleApprove = async () => {
-    if (!booking) return;
-    updateLocalBooking(booking.id, { status: "confirmed" });
-    const { data } = await updateBooking(booking.id, { status: "confirmed" });
-    if (data) setBooking((prev) => prev ? { ...prev, status: "confirmed" } : prev);
-    else setBooking((prev) => prev ? { ...prev, status: "confirmed" } : prev);
+  const updateStatus = async (id: string, status: string) => {
+    updateLocalBooking(id, { status });
+    const res = await fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    const json = await res.json();
+    if (json.data) {
+      setBooking((prev) => prev ? { ...prev, status: json.data.status } : prev);
+    } else {
+      setBooking((prev) => prev ? { ...prev, status } : prev);
+    }
   };
 
-  const handleReject = async () => {
+  const handleApprove = () => {
     if (!booking) return;
-    updateLocalBooking(booking.id, { status: "cancelled" });
-    const { data } = await updateBooking(booking.id, { status: "cancelled" });
-    if (data) setBooking((prev) => prev ? { ...prev, status: "cancelled" } : prev);
-    else setBooking((prev) => prev ? { ...prev, status: "cancelled" } : prev);
+    updateStatus(booking.id, "confirmed");
+  };
+
+  const handleReject = () => {
+    if (!booking) return;
+    updateStatus(booking.id, "cancelled");
   };
 
   if (loading) {

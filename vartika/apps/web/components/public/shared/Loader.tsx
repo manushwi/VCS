@@ -1,13 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
+const VIEWBOX_W = 900;
+const VIEWBOX_H = 800;
 
 export default function Loader() {
   const [out, setOut] = useState(false);
+  const logoRef = useRef(null);
+  const [logoTransform, setLogoTransform] = useState(
+    "translate(148, 279) scale(0.9)"
+  );
 
   useEffect(() => {
+    document.body.style.overflow = "hidden";
     const timer = setTimeout(() => setOut(true), 4000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  // Keep the logo fully inside the visible (sliced) area on any screen size
+  useLayoutEffect(() => {
+    function fitLogo() {
+      if (!logoRef.current) return;
+
+      logoRef.current.setAttribute("transform", ""); // measure raw geometry
+      const box = logoRef.current.getBBox();
+      if (!box.width || !box.height) return;
+
+      const fillScale = Math.max(
+        window.innerWidth / VIEWBOX_W,
+        window.innerHeight / VIEWBOX_H
+      );
+      const visibleW = window.innerWidth / fillScale;
+      const visibleH = window.innerHeight / fillScale;
+
+      const safety = 0.75; // logo uses at most 75% of the tighter dimension
+      const scale = Math.min(
+        (visibleW * safety) / box.width,
+        (visibleH * safety) / box.height,
+        0.9 // cap at original desktop size
+      );
+
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      const tx = VIEWBOX_W / 2 - scale * cx;
+      const ty = VIEWBOX_H / 2 - scale * cy;
+
+      setLogoTransform(`translate(${tx} ${ty}) scale(${scale})`);
+    }
+
+    fitLogo();
+    window.addEventListener("resize", fitLogo);
+    return () => window.removeEventListener("resize", fitLogo);
   }, []);
 
   if (out) return null;
@@ -26,52 +73,41 @@ export default function Loader() {
         justifyContent: "center",
         zIndex: 99999,
         overflow: "hidden",
+        animation: "vcsOverlayOut 0.4s ease-in 3.6s forwards",
       }}
     >
-      {/* Scale/fade wrapper — animation now lives here on a plain HTML
-          element using transform + opacity only, so the browser can run
-          it on the compositor thread (GPU) instead of re-rasterizing an
-          SVG mask every frame. That re-rasterization of the mask against
-          the raster <image> on every tick was the source of the jank. */}
-      <div
-        className="vcs-scale-wrapper"
-        style={{
-          width: "100%",
-          height: "100%",
-          transformOrigin: "50% 50%",
-          willChange: "transform, opacity",
-          backfaceVisibility: "hidden",
-        }}
+      <svg
+        viewBox="0 0 900 800"
+        preserveAspectRatio="xMidYMid slice"
+        style={{ width: "100%", height: "100%" }}
       >
-        <svg
-          viewBox="0 0 900 800"
-          preserveAspectRatio="xMidYMid slice"
-          style={{ width: "100%", height: "100%", display: "block" }}
-        >
-          <defs>
-            {/* Mask is now fully static — no animation inside it.
-                The reveal shape is fixed, only the wrapper around the
-                whole SVG scales/fades. */}
-            <mask id="vcsMask">
-              <rect width="100%" height="100%" fill="none" />
-              <g transform="translate(148, 279) scale(0.9)" fill="white">
+        <defs>
+          <mask id="vcsMask">
+            <rect width="100%" height="100%" fill="black" />
+            <g
+              style={{
+                transformBox: "view-box",
+                transformOrigin: "450px 400px",
+                animation: "vcsExpand 4s ease-in-out forwards",
+              }}
+            >
+              <g ref={logoRef} transform={logoTransform} fill="white">
                 <path d="M349.6 63c-10.3 1.7-20.7 5-29 9.2-11.7 6-24.6 19.1-30.4 30.8-2.3 4.7-4.2 9.1-4.2 9.8 0 .6 4.4-1 9.9-3.8 11.7-5.9 23.6-9.5 34.4-10.5 4.8-.4 9.9-1.6 13.1-3.1 16.7-7.6 36.5-4.6 51.8 7.9 3.2 2.6 6 4.7 6.4 4.7.3 0 5.5-4.4 11.6-9.8l11-9.7-7.4-7c-8.7-8.2-18.1-13.2-30.8-16.4-9.8-2.5-27.4-3.5-36.4-2.1M485 63c-20.4 2.9-37.3 12.8-43.8 25.7-6.2 12.3-5 32.2 2.5 40.5 1.4 1.6 1.9 1.5 7.5-1.3 7-3.5 25.6-10.9 27.5-10.9 2.1 0 1.5-1.6-1.3-3-5.9-3.2-7.1-11-2.4-16.4 4.4-4.9 11.1-6.9 23.5-7 14 0 26.8 3.5 40.6 11.1.7.4 11.9-23.9 11.9-25.6 0-1.1-10.1-6-17-8.4-13-4.4-35.6-6.6-49-4.7m-357 2.4c0 .2 5.7 13.4 12.6 29.3 6.9 15.8 16.2 37.1 20.6 47.3s8.6 19.1 9.3 19.9c1.1 1.1 3.2 1.2 12.3.2 9.5-1 21.9-3.4 23-4.5.2-.2-8.6-21-19.5-46.3l-19.8-45.8-19.3-.3c-10.5-.1-19.2-.1-19.2.2m113 29.3c-7.3 16.4-16.4 36.5-20.1 44.8-3.7 8.2-6.4 15.1-6 15.3 1.5.5 23.7-10 34.8-16.6l11.3-6.6 10.4-23c5.7-12.7 12.5-27.7 15-33.4l4.5-10.2h-36.5z" />
                 <path d="M317.4 108.4c-12.2 3-23 8.4-40.4 20.6-31.6 21.9-54.3 33.1-79 38.6-11.8 2.7-33.3 2.5-43.3-.4-9.7-2.8-14.6-5.2-19.7-9.8-10.6-9.6-10.5-22.2.3-32.2 5.6-5.1 4.5-5.4-2.8-.8-18.7 12-13.7 36.3 9.9 47.5 9.2 4.4 18.1 6.9 27.8 7.8 3.9.3 7.3 1.2 7.9 2 .7.7 3.8 7.1 6.9 14.1l5.6 12.7 18.2.3 18.1.2 2.4-4.7c1.4-2.7 5.7-12.2 9.7-21.3s7.7-17.1 8.3-17.8c.6-.8 5-3.3 9.8-5.8 4.8-2.4 12.2-6.4 16.4-8.9s8.1-4.5 8.6-4.5.9 1 .9 2.1c0 4 4.1 16.3 7.8 23.4 4.6 8.8 15.4 20.3 24.9 26.6 8.5 5.5 20.8 10.2 31.5 11.9 9.8 1.6 31.1.8 39.2-1.5 7-2 17.8-6.9 22.6-10.4 4.6-3.2 14-12.3 14-13.4 0-.4-1.4-2-3-3.4-3-2.5-3-2.6-1.3-4.6 3-3.3 24.2-19.9 34.4-26.9 31.9-21.8 72.2-32.5 94.7-25.2 8.9 2.9 15.2 9.9 15.2 16.9 0 3.6 1.8 3.1 2.5-.8 2.2-11.6-8.9-22.4-26.7-26.1-9.7-2-17.7-2-29.8-.1-35.5 5.7-66.4 20.3-105.2 49.8-19.7 14.9-25.6 17.2-42.7 16.5-9.7-.4-11.3-.7-18.2-4.1-9.3-4.4-16.7-11.9-21.2-21.4-3-6.5-3.2-7.4-3.2-18.8 0-11 .2-12.5 2.7-17.8 1.5-3.2 3.7-7.1 4.8-8.8l2.1-2.9-2.8.1c-1.5 0-5.1.6-7.9 1.3" />
                 <path d="M511.2 131.6c-13.5 3.5-38.4 13.5-37 14.9.2.2 8 2.3 17.3 4.6 9.4 2.2 19.4 5.2 22.3 6.6 8.2 3.8 11 9.9 7.8 16.2-6.5 12.6-40.8 11.8-65.4-1.5-4.6-2.4-8.7-4.2-9.3-3.9-.5.4-3.6 6-6.9 12.5l-6 11.9 2.8 2c9.6 6.8 27.5 13.1 42.9 15.2 11.4 1.5 32.6.7 40.8-1.5 8.8-2.4 19.3-7.7 24.7-12.5 9.1-8.1 14.3-23.8 12.1-36-1.6-8.2-3.9-12.8-9.6-18.4-5.3-5.4-19.5-12.8-24.3-12.6-1.6 0-7.1 1.1-12.2 2.5" />
               </g>
-            </mask>
-          </defs>
-          <image
-            href="/main2.png"
-            width="100%"
-            height="100%"
-            preserveAspectRatio="xMidYMid slice"
-            mask="url(#vcsMask)"
-          />
-        </svg>
-      </div>
+            </g>
+          </mask>
+        </defs>
+        <image
+          href="/main14.svg"
+          width="100%"
+          height="100%"
+          preserveAspectRatio="xMidYMid slice"
+          mask="url(#vcsMask)"
+        />
+      </svg>
 
-      {/* Overlay - bottom text only */}
       <div
         className="bottom-text"
         style={{
@@ -101,45 +137,23 @@ export default function Loader() {
       </div>
 
       <style>{`
-        .vcs-scale-wrapper {
-          animation: vcsExpand 4s cubic-bezier(0.45, 0, 0.55, 1) forwards;
-        }
         @keyframes vcsExpand {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(10);
-            opacity: 0;
-          }
-        }
-        @keyframes vcsExpandMobile {
-          0%   { transform: scale(0.4); opacity: 1; }
-          50%  { transform: scale(0.4); opacity: 1; }
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1); opacity: 1; }
           100% { transform: scale(10); opacity: 0; }
         }
         @keyframes vcsFadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(30px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-          }
+          0% { opacity: 0; transform: translateX(-50%) translateY(30px); }
+          100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes vcsOverlayOut {
+          0% { opacity: 1; }
+          100% { opacity: 0; }
         }
         @media (max-width: 768px) {
           .bottom-text p {
             font-size: 1rem !important;
             letter-spacing: 0.25rem !important;
-          }
-          .vcs-scale-wrapper {
-            animation: vcsExpandMobile 4s cubic-bezier(0.45, 0, 0.55, 1) forwards !important;
           }
         }
         @media (max-width: 480px) {

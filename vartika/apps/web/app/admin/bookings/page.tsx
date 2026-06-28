@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { updateBooking } from "@/lib/supabase/queries/bookings";
 import { getLocalBookings, updateLocalBooking } from "@/lib/local-bookings";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { WA_TEMPLATES } from "@/lib/constants/messages";
@@ -141,39 +140,23 @@ export default function AdminBookingsPage() {
     ])
   );
 
-  const handleApprove = async (id: string) => {
-    const booking = bookings.find((b) => b.id === id);
-    if (booking?._local) {
-      updateLocalBooking(id, { status: "confirmed" });
+  const updateStatus = async (id: string, status: string) => {
+    updateLocalBooking(id, { status });
+    const res = await fetch("/api/bookings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    const json = await res.json();
+    if (json.data) {
       setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))
-      );
-      return;
-    }
-    const { data } = await updateBooking(id, { status: "confirmed" });
-    if (data) {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))
+        prev.map((b) => (b.id === id ? { ...b, status } : b))
       );
     }
   };
 
-  const handleReject = async (id: string) => {
-    const booking = bookings.find((b) => b.id === id);
-    if (booking?._local) {
-      updateLocalBooking(id, { status: "cancelled" });
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
-      );
-      return;
-    }
-    const { data } = await updateBooking(id, { status: "cancelled" });
-    if (data) {
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b))
-      );
-    }
-  };
+  const handleApprove = (id: string) => updateStatus(id, "confirmed");
+  const handleReject = (id: string) => updateStatus(id, "cancelled");
 
   if (loading) {
     return (
@@ -327,7 +310,11 @@ export default function AdminBookingsPage() {
                           prev.map((b) => (b.id === booking.id ? { ...b, status: "contacted" } : b))
                         );
                         if (!booking._local) {
-                          updateBooking(booking.id, { status: "contacted" });
+                          fetch("/api/bookings", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ id: booking.id, status: "contacted" }),
+                          });
                         } else {
                           updateLocalBooking(booking.id, { status: "contacted" });
                         }

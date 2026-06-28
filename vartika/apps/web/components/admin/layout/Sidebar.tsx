@@ -106,7 +106,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className={`w-60 bg-[#111210] border-r border-white/5 flex flex-col shrink-0 overflow-y-auto max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:transition-transform max-md:duration-300 max-md:shadow-xl max-md:shadow-black/50 ${sidebarOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full'}`}>
         <div className="px-6 py-6 border-b border-white/5">
           <div className="flex items-center justify-between gap-2">
-            <img src="/logo-horizontal.svg" alt="Vartika" className="h-6 w-auto" />
+            <img src="/newlogogreen.svg" alt="Vartika" className="h-6 w-auto" />
             <button
               className="md:hidden text-white/40 hover:text-white/85 text-lg"
               onClick={() => setSidebarOpen(false)}

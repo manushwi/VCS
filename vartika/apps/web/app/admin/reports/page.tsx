@@ -1,31 +1,36 @@
-import { createServerSupabase } from "@/lib/supabase/server";
+"use client";
 
-export default async function AdminReportsPage() {
-  const supabase = await createServerSupabase();
+import { useEffect, useState } from "react";
 
-  const { data: bookings } = await supabase
-    .from("bookings")
-    .select("*")
-    .order("created_at", { ascending: true });
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const { data: services } = await supabase
-    .from("services")
-    .select("slug, name")
-    .eq("is_active", true);
+export default function AdminReportsPage() {
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const svcMap = new Map((services || []).map((s) => [s.slug, s.name]));
+  useEffect(() => {
+    Promise.all([
+      fetch("/api/bookings").then((r) => r.json()),
+      fetch("/api/services").then((r) => r.json()),
+    ]).then(([bookingsRes, svcRows]) => {
+      setBookings(bookingsRes.data || []);
+      setServices(svcRows || []);
+      setLoading(false);
+    });
+  }, []);
 
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const svcMap = new Map((services || []).map((s: { slug: string; name: string }) => [s.slug, s.name]));
 
   const monthlyCounts = new Array(12).fill(0);
-  (bookings || []).forEach((b) => {
+  (bookings || []).forEach((b: any) => {
     const d = new Date(b.created_at);
     monthlyCounts[d.getMonth()]++;
   });
   const maxMonthly = Math.max(...monthlyCounts, 1);
 
   const svcCounts: Record<string, number> = {};
-  (bookings || []).forEach((b) => {
+  (bookings || []).forEach((b: any) => {
     svcCounts[b.service_slug] = (svcCounts[b.service_slug] || 0) + 1;
   });
   const totalBookings = (bookings || []).length;
@@ -35,6 +40,18 @@ export default async function AdminReportsPage() {
       pct: Math.round((count / totalBookings) * 100),
     }))
     .sort((a, b) => b.pct - a.pct);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-6 w-24 bg-white/5 rounded-8 mb-5" />
+        <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
+          <div className="bg-[#161714] border border-white/6 rounded-12 p-6 h-[260px]" />
+          <div className="bg-[#161714] border border-white/6 rounded-12 p-6 h-[260px]" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -51,7 +68,7 @@ export default async function AdminReportsPage() {
               Bookings by Month ({totalBookings} total)
             </h3>
             <div className="flex items-end gap-3 h-[160px] pt-2">
-              {monthlyCounts.map((h, i) => {
+              {monthlyCounts.map((h: number, i: number) => {
                 const pct = Math.max((h / maxMonthly) * 100, h > 0 ? 8 : 0);
                 return (
                   <div

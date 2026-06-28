@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 function getInitials(name: string) {
   return name
@@ -48,13 +47,12 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
     Promise.all([
-      supabase.from("bookings").select("*").order("created_at", { ascending: false }),
-      supabase.from("services").select("slug, name, base_price, pricing_model").eq("is_active", true),
-    ]).then(([{ data: b }, { data: s }]) => {
-      setBookings(b || []);
-      setServices(s || []);
+      fetch("/api/bookings").then((r) => r.json()),
+      fetch("/api/services").then((r) => r.json()),
+    ]).then(([bookingsRes, svcRows]) => {
+      setBookings(bookingsRes.data || []);
+      setServices(svcRows || []);
       setLoading(false);
     });
   }, []);
