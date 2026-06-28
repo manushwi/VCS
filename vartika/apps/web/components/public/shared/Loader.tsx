@@ -7,7 +7,7 @@ const VIEWBOX_H = 800;
 
 export default function Loader() {
   const [out, setOut] = useState(false);
-  const logoRef = useRef(null);
+  const logoRef = useRef<SVGGElement>(null);
   const [logoTransform, setLogoTransform] = useState(
     "translate(148, 279) scale(0.9)"
   );

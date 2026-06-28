@@ -12,14 +12,9 @@ export async function GET(request: NextRequest) {
   const supabase = getSupabase();
   const id = request.nextUrl.searchParams.get("id");
 
-  let query = supabase.from("bookings").select("*");
-  if (id) {
-    query = query.eq("id", id).single();
-  } else {
-    query = query.order("created_at", { ascending: false });
-  }
-
-  const { data, error } = await query;
+  const { data, error } = id
+    ? await supabase.from("bookings").select("*").eq("id", id).single()
+    : await supabase.from("bookings").select("*").order("created_at", { ascending: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
