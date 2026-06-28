@@ -79,21 +79,29 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <button
-          className="hidden max-md:flex flex-col items-center justify-center cursor-pointer p-1 w-8 h-8"
-          onClick={() => setMobOpen((prev) => !prev)}
-          aria-label={mobOpen ? "Close menu" : "Open menu"}
-        >
-          {mobOpen ? (
-            <span className="text-xl text-ink leading-none">✕</span>
-          ) : (
-            <>
-              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
-              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
-              <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
-            </>
-          )}
-        </button>
+        <div className="hidden max-md:flex items-center gap-2">
+          <Link
+            href="/book"
+            className="px-3.5 py-1.5 bg-accent text-white rounded-full text-xs font-medium tracking-wide whitespace-nowrap hover:bg-accent2 transition-all"
+          >
+            Book Now
+          </Link>
+          <button
+            className="flex flex-col items-center justify-center cursor-pointer p-1 w-8 h-8"
+            onClick={() => setMobOpen((prev) => !prev)}
+            aria-label={mobOpen ? "Close menu" : "Open menu"}
+          >
+            {mobOpen ? (
+              <span className="text-xl text-ink leading-none">✕</span>
+            ) : (
+              <>
+                <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all" />
+                <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
+                <span className="w-5 h-[1.5px] bg-ink rounded-px transition-all mt-[3px]" />
+              </>
+            )}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile Nav */}
@@ -103,7 +111,7 @@ export default function Navbar() {
           mobOpen ? "flex" : "hidden"
         }`}
       >
-        {[{ label: "Home", href: "/" }, ...navLinks, { label: "Book Now", href: "/book" }].map((link) => (
+        {[{ label: "Home", href: "/" }, ...navLinks].map((link) => (
           <Link
             key={link.label}
             href={link.href}
@@ -113,6 +121,13 @@ export default function Navbar() {
             {link.label}
           </Link>
         ))}
+        <Link
+          href="/book"
+          onClick={() => setMobOpen(false)}
+          className="mt-4 px-10 py-3.5 bg-accent text-white rounded-full text-sm font-medium tracking-wide shadow-[0_4px_20px_rgba(61,89,72,0.2)] hover:bg-accent2 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(61,89,72,0.3)] transition-all"
+        >
+          Book Now
+        </Link>
       </div>
     </>
   );

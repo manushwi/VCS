@@ -86,7 +86,7 @@ export default function Transformation() {
       >
         <div className="absolute inset-0">
           <Image
-            src="/shining2.png"
+            src="/shining5.png"
             alt="Before cleaning"
             fill
             className="object-cover"
@@ -96,7 +96,7 @@ export default function Transformation() {
         </div>
         <div ref={afterRef} className="absolute inset-0">
           <Image
-            src="/dull2.png"
+            src="/dull5.png"
             alt="After cleaning"
             fill
             className="object-cover"

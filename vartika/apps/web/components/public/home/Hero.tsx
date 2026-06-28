@@ -56,6 +56,20 @@ export default function Hero() {
               Marble Polishing, Facade, Carpet & <br />
               Sofa Cleaning Services
             </p>
+            <div className="mt-10 flex items-center justify-center gap-4 flex-col sm:flex-row">
+              <Link
+                href="/book"
+                className="inline-flex items-center gap-2 bg-accent text-white px-8 py-4 rounded-full text-sm font-medium tracking-wide shadow-[0_4px_20px_rgba(61,89,72,0.2)] hover:bg-accent2 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(61,89,72,0.3)] transition-all"
+              >
+                Book Cleaning Now
+              </Link>
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-2 bg-transparent text-[#0A0908]/80 px-8 py-4 rounded-full text-sm font-medium tracking-wide border border-[#0A0908]/20 hover:border-accent hover:text-accent hover:-translate-y-0.5 transition-all"
+              >
+                Explore Services
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>

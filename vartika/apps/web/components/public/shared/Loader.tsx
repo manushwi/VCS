@@ -38,6 +38,7 @@ export default function Loader() {
           <mask id="vcsMask">
             <rect width="100%" height="100%" fill="none" />
             <g
+              className="vcs-mask-group"
               style={{
                 transformOrigin: "450px 400px",
                 animation: "vcsExpand 4s ease-in-out forwards",
@@ -62,6 +63,7 @@ export default function Loader() {
 
       {/* Overlay - bottom text only */}
       <div
+      className="bottom-text" 
         style={{
           position: "absolute",
           bottom: "2%",
@@ -103,6 +105,11 @@ export default function Loader() {
             opacity: 0;
           }
         }
+        @keyframes vcsExpandMobile {
+          0%   { transform: scale(0.4); opacity: 1; }
+          50%  { transform: scale(0.4); opacity: 1; }
+          100% { transform: scale(10); opacity: 0; }
+        }
         @keyframes vcsFadeInUp {
           0% {
             opacity: 0;
@@ -126,6 +133,11 @@ export default function Loader() {
           }
           .bottom-text {
             bottom: 20% !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .vcs-mask-group {
+            animation: vcsExpandMobile 4s ease-in-out forwards !important;
           }
         }
       `}</style>

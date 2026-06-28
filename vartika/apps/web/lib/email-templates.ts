@@ -12,7 +12,7 @@ interface BookingData {
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://vcs-lemon.vercel.app/";
-const LOGO_URL = `${SITE_URL}/logo-horizontal.svg`;
+const LOGO_URL = `${SITE_URL}/newlogogreen.svg`;
 
 function wrapLayout(body: string) {
   return `<!DOCTYPE html>

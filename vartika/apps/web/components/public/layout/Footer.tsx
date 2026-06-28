@@ -12,7 +12,7 @@ export default function Footer() {
         {/* Brand */}
         <div>
           <div className="flex items-center pt-5 pb-0 mb-0 gap-3">
-            <img src="/logo-horizontal.svg" alt="Vartika" className="h-[100px] w-auto object-contain" />
+            <img src="/newlogogreen.svg" alt="Vartika" className="h-[100px] w-auto object-contain" />
           </div>
           <p className="text-sm text-white/40 leading-relaxed mt-0 max-w-[260px] mb-2">
             Transforming spaces with precision, care, and the highest standards
@@ -94,7 +94,7 @@ export default function Footer() {
           </div>
           <div className="flex gap-2 mb-2 text-sm">
             <span className="text-accent2">📞</span>
-            <span className="text-white/50">+91 8882121010</span>
+            <span className="text-white/50">+91 8882121010 <br className="text-sm" />+91 9220513030</span>
           </div>
           <div className="flex gap-2 mb-2 text-sm min-w-0">
             <span className="text-accent2">✉</span>
