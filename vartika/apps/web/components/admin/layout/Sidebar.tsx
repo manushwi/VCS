@@ -62,12 +62,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "new")
-      .then(({ count }) => setPendingCount(count || 0));
+    fetch("/api/bookings")
+      .then((r) => r.json())
+      .then((json) => {
+        const newCount = (json.data || []).filter(
+          (b: { status: string }) => b.status === "new"
+        ).length;
+        setPendingCount(newCount);
+      })
+      .catch(() => setPendingCount(0));
   }, []);
 
   const handleSearch = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {

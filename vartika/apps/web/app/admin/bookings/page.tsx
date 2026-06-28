@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getBookings, updateBooking } from "@/lib/supabase/queries/bookings";
+import { updateBooking } from "@/lib/supabase/queries/bookings";
 import { getLocalBookings, updateLocalBooking } from "@/lib/local-bookings";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { WA_TEMPLATES } from "@/lib/constants/messages";
@@ -96,13 +96,13 @@ export default function AdminBookingsPage() {
 
   useEffect(() => {
     Promise.all([
-      getBookings(),
+      fetch("/api/bookings").then((r) => r.json()),
       fetch("/api/services").then((r) => r.json()),
     ])
-      .then(([{ data, error }, svcRows]) => {
+      .then(([bookingsRes, svcRows]) => {
         setServices(svcRows.map((s: { slug: string; name: string }) => ({ slug: s.slug, name: s.name })));
-        if (data) {
-          setBookings(data);
+        if (bookingsRes.data) {
+          setBookings(bookingsRes.data);
         } else {
           const local = getLocalBookings();
           setBookings(local.map((b) => ({ ...b, _local: true })));
